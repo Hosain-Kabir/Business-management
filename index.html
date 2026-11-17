@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#166534">
+<title>Seller Toolkit — Facebook & Small Online Sellers</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Segoe UI",Roboto,Arial,sans-serif;background:#f1f5f1;color:#1f2937;padding-bottom:80px;font-size:16px}
+header.app-header{background:#166534;color:#fff;padding:12px 16px}
+.header-inner{max-width:920px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:10px}
+header.app-header h1{font-size:1.2rem;letter-spacing:.3px}
+#headerUser{display:none;align-items:center;gap:8px;font-size:.78rem}
+#headerUser span{max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;opacity:.95}
+main{max-width:920px;margin:0 auto;padding:12px}
+.page{display:none}
+.page.active{display:block}
+.box{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:14px;margin-bottom:14px}
+.box h2{font-size:1.05rem;color:#166534;margin-bottom:10px;border-bottom:2px solid #dcfce7;padding-bottom:6px}
+.box h3{font-size:.92rem;color:#166534;margin:12px 0 8px}
+/* Cards */
+.cards{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
+@media(min-width:640px){.cards{grid-template-columns:repeat(3,1fr)}}
+.card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:12px}
+.card-label{font-size:.76rem;color:#475569;margin-bottom:6px}
+.card-value{font-size:1.15rem;font-weight:700;color:#166534;word-break:break-word}
+.card.warn .card-value{color:#b45309}
+.card.danger .card-value{color:#dc2626}
+.pos{color:#15803d;font-weight:700}
+.neg{color:#dc2626;font-weight:700}
+/* Forms */
+.form-grid{display:grid;grid-template-columns:1fr;gap:10px}
+@media(min-width:640px){.form-grid{grid-template-columns:1fr 1fr}}
+.full{grid-column:1/-1}
+label{display:block;font-size:.82rem;font-weight:600;margin-bottom:4px;color:#374151}
+input,select,textarea{width:100%;padding:12px;font-size:16px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;font-family:inherit}
+textarea{min-height:56px;resize:vertical}
+.btn{display:inline-block;background:#16a34a;color:#fff;border:none;border-radius:8px;padding:13px 18px;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit}
+.btn:active{background:#15803d}
+.btn-gray{background:#64748b}.btn-gray:active{background:#475569}
+.btn-red{background:#dc2626}.btn-red:active{background:#b91c1c}
+.btn-blue{background:#2563eb}.btn-blue:active{background:#1d4ed8}
+.btn-small{padding:9px 12px;font-size:.84rem;border-radius:8px}
+.btn-row{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+/* Tables */
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;min-width:640px;border-collapse:collapse;font-size:.87rem}
+th{background:#f0fdf4;color:#166534;text-align:left;padding:10px;border-bottom:2px solid #bbf7d0;white-space:nowrap}
+td{padding:10px;border-bottom:1px solid #e5e7eb;vertical-align:middle}
+tr:nth-child(even) td{background:#fafafa}
+.totals-row td{font-weight:700;background:#f0fdf4 !important;border-top:2px solid #bbf7d0}
+.empty{text-align:center;color:#6b7280;padding:18px;font-size:.9rem}
+.badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:.7rem;font-weight:700;white-space:nowrap}
+.b-pending{background:#fef3c7;color:#92400e}
+.b-sent{background:#dbeafe;color:#1e40af}
+.b-delivered{background:#dcfce7;color:#166534}
+.b-return{background:#fee2e2;color:#991b1b}
+.b-cancel{background:#e5e7eb;color:#374151}
+.search-box{margin-bottom:10px}
+.summary-strip{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:10px;font-size:.88rem;margin:10px 0;line-height:1.7}
+.cod-item{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid #e2e8f0;border-radius:8px;padding:10px;margin-bottom:8px;flex-wrap:wrap;background:#fff}
+.cod-item .info{font-size:.88rem;line-height:1.5}
+.cod-item .amt{font-weight:700;color:#b45309;font-size:1rem}
+.ret-input{width:130px;padding:8px;font-size:.85rem}
+.hint{font-size:.78rem;color:#6b7280;margin-top:6px;line-height:1.5}
+/* Auth / expired screens */
+.center-screen{display:none;min-height:100vh;align-items:center;justify-content:center;padding:20px}
+.center-screen.show{display:flex}
+.auth-box{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:24px;width:100%;max-width:420px;text-align:left}
+.auth-box h1{color:#166534;font-size:1.5rem;text-align:center}
+.auth-box .tag{text-align:center;color:#475569;font-size:.85rem;margin:6px 0 18px}
+.auth-box .btn-row .btn{flex:1}
+#authMessage{min-height:1.2em;font-size:.85rem;margin-top:10px}
+.msg-error{color:#dc2626}
+.msg-ok{color:#15803d}
+#configWarning{background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;border-radius:8px;padding:10px;font-size:.82rem;margin-bottom:12px;line-height:1.5}
+/* Subscription banner */
+#subBanner{display:none;background:#fffbeb;border:1px solid #fcd34d;color:#92400e;border-radius:8px;padding:8px 12px;font-size:.85rem;margin-bottom:12px;text-align:center}
+/* Loading overlay */
+#loadingOverlay{display:none;position:fixed;inset:0;background:rgba(255,255,255,.75);z-index:2000;align-items:center;justify-content:center}
+#loadingOverlay .box-loading{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:18px 28px;font-weight:700;color:#166534}
+/* Error toast */
+#errorToast{display:none;position:fixed;top:10px;left:10px;right:10px;z-index:2100;background:#dc2626;color:#fff;border-radius:8px;padding:12px 14px;font-size:.88rem;cursor:pointer;line-height:1.5}
+/* Yearly bar chart */
+.bar-row{display:flex;align-items:center;gap:8px;margin:5px 0}
+.bar-label{width:34px;font-size:.8rem;color:#475569}
+.bar-track{flex:1;background:#eef2ee;border-radius:4px;height:20px;overflow:hidden}
+.bar-fill{height:100%;background:#16a34a}
+.bar-fill.neg{background:#dc2626}
+.bar-val{width:86px;text-align:right;font-size:.75rem;color:#374151}
+/* Bottom tab bar */
+nav#tabbar{display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid #e2e8f0;z-index:1000;box-shadow:0 -2px 8px rgba(0,0,0,.08)}
+nav#tabbar.show{display:flex}
+nav#tabbar button{flex:1;min-height:64px;border:none;background:transparent;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-family:inherit;color:#475569;padding:4px 1px}
+nav#tabbar button .ic{font-size:1.25rem;line-height:1}
+nav#tabbar button .tx{font-size:.6rem;font-weight:600;white-space:nowrap}
+nav#tabbar button.active{background:#dcfce7;color:#166534}
+@media(min-width:640px){nav#tabbar button .tx{font-size:.72rem}}
+.top-products-list{list-style:none}
+.top-products-list li{display:flex;justify-content:space-between;gap:10px;padding:8px 4px;border-bottom:1px solid #e5e7eb;font-size:.9rem}
+.top-products-list li:last-child{border-bottom:none}
+/* Print: only the yearly report */
+@media print{
+  body{background:#fff;padding:0}
+  header.app-header,nav#tabbar,#subBanner,#loadingOverlay,#errorToast,.no-print{display:none !important}
+  .page{display:none !important}
+  #page-yearly{display:block !important}
+  .box{border:none;padding:0;margin:0}
+  table{min-width:0;font-size:.72rem}
+}
+</style>
+</head>
+<body>
+
+<!-- Loading overlay -->
+<div id="loadingOverlay"><div class="box-loading">Loading…</div></div>
+<!-- Error toast (tap to dismiss) -->
+<div id="errorToast" onclick="hideError()"></div>
+
+<!-- Header -->
+<header class="app-header">
+  <div class="header-inner">
+    <h1>🛒 Seller Toolkit</h1>
+    <div id="headerUser"><span id="userEmail"></span><button class="btn btn-gray btn-small" id="btnLogout">Logout</button></div>
+  </div>
+</header>
+
+<!-- ========== AUTH SCREEN (Login / Sign Up) ========== -->
+<div class="center-screen show" id="authScreen">
+  <div class="auth-box">
+    <h1>🛒 Seller Toolkit</h1>
+    <p class="tag">Facebook & small online sellers — orders, COD, returns and profit in one place</p>
+    <div id="configWarning" hidden>⚠️ Supabase is not configured yet. Open <b>index.html</b> and set your <b>SUPABASE_URL</b> and <b>SUPABASE_ANON_KEY</b> constants at the top of the file, then reload.</div>
+    <label for="authEmail">Email</label>
+    <input type="email" id="authEmail" autocomplete="email" placeholder="you@example.com">
+    <div style="height:10px"></div>
+    <label for="authPassword">Password</label>
+    <input type="password" id="authPassword" autocomplete="current-password" placeholder="Minimum 6 characters">
+    <div class="btn-row">
+      <button class="btn" id="btnSignIn">Sign In</button>
+      <button class="btn btn-blue" id="btnSignUp">Sign Up</button>
+    </div>
+    <p id="authMessage"></p>
+  </div>
+</div>
+
+<!-- ========== SUBSCRIPTION EXPIRED SCREEN ========== -->
+<div class="center-screen" id="expiredScreen">
+  <div class="auth-box" style="text-align:center">
+    <h1 style="color:#dc2626">Subscription expired</h1>
+    <p style="margin:14px 0;line-height:1.6">Your Seller Toolkit subscription has ended.<br>To activate or renew, please contact us on WhatsApp:</p>
+    <p style="font-size:1.2rem;font-weight:700"><a id="expiredWhatsapp" href="#" style="color:#166534;text-decoration:none">+8801XXXXXXXXX</a></p>
+    <div class="btn-row" style="justify-content:center"><button class="btn btn-gray" id="btnLogoutExpired">Logout</button></div>
+  </div>
+</div>
+
+<!-- ========== MAIN APP ========== -->
+<div id="app" style="display:none">
+<main>
+  <div id="subBanner"></div>
+
+  <!-- 1. Dashboard -->
+  <section class="page active" id="page-dashboard">
+    <div class="cards">
+      <div class="card"><div class="card-label">Today's Sales</div><div class="card-value" id="dTodaySales">৳0</div></div>
+      <div class="card warn"><div class="card-label">Today's Expenses</div><div class="card-value" id="dTodayExpense">৳0</div></div>
+      <div class="card"><div class="card-label">Today's Profit (net)</div><div class="card-value" id="dTodayProfit">৳0</div></div>
+      <div class="card"><div class="card-label">This Month's Net Profit</div><div class="card-value" id="dMonthProfit">৳0</div></div>
+      <div class="card warn"><div class="card-label">Pending COD Amount</div><div class="card-value" id="dCodPending">৳0</div></div>
+      <div class="card danger"><div class="card-label">Total Returns</div><div class="card-value" id="dReturnCount">0</div></div>
+    </div>
+    <p class="hint">Profit is counted only for <b>Delivered</b> orders: (sell price − buy price) × quantity − delivery charge. Returned/Cancelled orders count 0 profit; their loss is added separately. Net profit = order profit − expenses − return loss.</p>
+  </section>
+
+  <!-- 2. Orders & Customers -->
+  <section class="page" id="page-orders">
+    <form class="box" id="orderForm">
+      <h2 id="orderFormTitle">➕ Add New Order</h2>
+      <div class="form-grid">
+        <div><label for="orderDate">Order Date *</label><input type="date" id="orderDate" required></div>
+        <div><label for="orderName">Customer Name *</label><input type="text" id="orderName" required placeholder="e.g. Rahim Uddin"></div>
+        <div><label for="orderPhone">Phone *</label><input type="tel" id="orderPhone" required placeholder="01XXXXXXXXX"></div>
+        <div><label for="orderCourier">Courier</label>
+          <select id="orderCourier">
+            <option>Steadfast</option><option>Pathao</option><option>RedX</option><option>Paperfly</option><option>Sundarban</option><option>Own Delivery</option><option>Other</option>
+          </select>
+        </div>
+        <div class="full"><label for="orderAddress">Address</label><input type="text" id="orderAddress" placeholder="District, thana, area"></div>
+        <div class="full"><label for="orderProduct">Product *</label><input type="text" id="orderProduct" required placeholder="e.g. Cotton Three-Piece"></div>
+        <div><label for="orderQty">Quantity *</label><input type="number" id="orderQty" min="1" step="1" value="1" required></div>
+        <div><label for="orderDelivery">Delivery Charge (৳)</label><input type="number" id="orderDelivery" min="0" step="any" value="0"></div>
+        <div><label for="orderSalePrice">Sell Price / piece (৳) *</label><input type="number" id="orderSalePrice" min="0" step="any" required placeholder="0"></div>
+        <div><label for="orderBuyPrice">Buy Price / piece (৳)</label><input type="number" id="orderBuyPrice" min="0" step="any" value="0"></div>
+        <div><label for="orderPayType">Payment Type</label>
+          <select id="orderPayType"><option value="COD">COD (Cash on Delivery)</option><option value="Prepaid">Prepaid</option></select>
+        </div>
+        <div><label for="orderStatus">Status</label>
+          <select id="orderStatus"><option>Pending</option><option>Shipped</option><option>Delivered</option><option>Returned</option><option>Cancelled</option></select>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button type="submit" class="btn" id="orderSubmitBtn">Add Order</button>
+        <button type="button" class="btn btn-gray" onclick="resetOrderForm()">Clear Form</button>
+      </div>
+    </form>
+
+    <div class="box">
+      <h2>📋 Order List</h2>
+      <input type="text" class="search-box" id="orderSearch" placeholder="🔍 Search by name or phone…">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Date</th><th>Customer</th><th>Phone</th><th>Product</th><th>Qty</th><th>Total</th><th>Payment</th><th>Courier</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody id="orderTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="box">
+      <h2>👥 Customers (by phone number)</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Phone</th><th>Name</th><th>Orders</th><th>Total Purchase</th></tr></thead>
+          <tbody id="customerTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. Daily Sales & Expenses -->
+  <section class="page" id="page-daily">
+    <div class="box">
+      <h2>📅 Daily Sales & Net Profit</h2>
+      <label for="dailyDate">Select date</label>
+      <input type="date" id="dailyDate">
+      <div class="summary-strip" id="dailySummary"></div>
+      <h3>Delivered orders on this date</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Product</th><th>Qty</th><th>Sales</th><th>Profit</th></tr></thead>
+          <tbody id="dailySalesBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <form class="box" id="expenseForm">
+      <h2>➕ Add Expense</h2>
+      <div class="form-grid">
+        <div><label for="expDate">Date *</label><input type="date" id="expDate" required></div>
+        <div><label for="expCategory">Category *</label>
+          <select id="expCategory"><option>Ads</option><option>Packaging</option><option>Rent</option><option>Other</option></select>
+        </div>
+        <div><label for="expAmount">Amount (৳) *</label><input type="number" id="expAmount" min="0" step="any" required placeholder="0"></div>
+        <div><label for="expNote">Note</label><input type="text" id="expNote" placeholder="e.g. Facebook boost"></div>
+      </div>
+      <div class="btn-row"><button type="submit" class="btn">Add Expense</button></div>
+      <h3>Expenses on selected date</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Category</th><th>Amount</th><th>Note</th><th></th></tr></thead>
+          <tbody id="expenseTableBody"></tbody>
+        </table>
+      </div>
+    </form>
+  </section>
+
+  <!-- 4. COD & Courier -->
+  <section class="page" id="page-cod">
+    <div class="box">
+      <h2>🚚 COD by Courier (Delivered orders)</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Courier</th><th>Orders</th><th>Total COD</th><th>Courier Charges</th><th>Received</th><th>Pending</th></tr></thead>
+          <tbody id="courierTableBody"></tbody>
+        </table>
+      </div>
+      <p class="hint" id="inTransitNote"></p>
+    </div>
+    <div class="box">
+      <h2>⏳ Pending COD — not yet received</h2>
+      <div id="codPendingList"></div>
+    </div>
+  </section>
+
+  <!-- 5. Returns & Cancels -->
+  <section class="page" id="page-returns">
+    <div class="box">
+      <h2>↩️ Returns & Cancels</h2>
+      <div class="summary-strip" id="returnSummary"></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Date</th><th>Customer</th><th>Product</th><th>Status</th><th>Reason</th><th>Loss (৳)</th></tr></thead>
+          <tbody id="returnTableBody"></tbody>
+        </table>
+      </div>
+      <p class="hint">Returned/Cancelled orders have 0 profit. Enter the delivery/return charge you lost — it is counted as loss. Type a reason and tap outside the field to save.</p>
+    </div>
+  </section>
+
+  <!-- 6. Product Profit/Loss -->
+  <section class="page" id="page-products">
+    <div class="box">
+      <h2>📈 Product Profit / Loss (best first)</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Product</th><th>Total Sales</th><th>Delivered</th><th>Returned</th><th>Profit / Loss</th></tr></thead>
+          <tbody id="productTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. Yearly Report -->
+  <section class="page" id="page-yearly">
+    <div class="box">
+      <h2>🗓️ Yearly Report</h2>
+      <div class="no-print" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px">
+        <div><label for="yearSelect">Year</label><select id="yearSelect" style="min-width:110px"></select></div>
+        <button class="btn btn-blue btn-small" id="btnYearCsv" style="margin-top:18px">Download CSV</button>
+        <button class="btn btn-gray btn-small" id="btnPrint" style="margin-top:18px">Print / Save as PDF</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Month</th><th>Orders</th><th>Delivered</th><th>Ret/Canc</th><th>Sales</th><th>Product Cost</th><th>Delivery Charges</th><th>Expenses</th><th>Net Profit</th></tr></thead>
+          <tbody id="yearlyTableBody"></tbody>
+        </table>
+      </div>
+      <h3>Monthly Net Profit</h3>
+      <div id="yearlyChart"></div>
+      <h3>Top 5 Products of the Year (by profit)</h3>
+      <ul class="top-products-list" id="topProductsList"></ul>
+    </div>
+  </section>
+</main>
+</div><!-- /app -->
+
+<!-- Bottom tab bar -->
+<nav id="tabbar">
+  <button class="active" data-tab="dashboard" onclick="switchTab('dashboard')"><span class="ic">📊</span><span class="tx">Dashboard</span></button>
+  <button data-tab="orders" onclick="switchTab('orders')"><span class="ic">📦</span><span class="tx">Orders</span></button>
+  <button data-tab="daily" onclick="switchTab('daily')"><span class="ic">💰</span><span class="tx">Sales/Exp</span></button>
+  <button data-tab="cod" onclick="switchTab('cod')"><span class="ic">🚚</span><span class="tx">COD</span></button>
+  <button data-tab="returns" onclick="switchTab('returns')"><span class="ic">↩️</span><span class="tx">Returns</span></button>
+  <button data-tab="products" onclick="switchTab('products')"><span class="ic">📈</span><span class="tx">Products</span></button>
+  <button data-tab="yearly" onclick="switchTab('yearly')"><span class="ic">🗓️</span><span class="tx">Yearly</span></button>
+</nav>
+
+<script>
+/* =====================================================
+   SELLER TOOLKIT — Supabase v2 backend
+   1) Fill in SUPABASE_URL and SUPABASE_ANON_KEY below.
+   2) Run supabase.sql in the Supabase SQL editor.
+   3) Open index.html — sign up, and you get a 7-day trial.
+   Extend here: all data access lives in the small
+   fetch/save functions so a cloud sync or extra tables
+   can be added without touching the UI code.
+   ===================================================== */
+var SUPABASE_URL = 'https://cbzdlpjnzaxupjnmhtra.supabase.co';   // ← paste your Project URL
+var SUPABASE_ANON_KEY = 'sb_publishable_0kJ3IhgfkjyerOq5B4X4iw_lycpILB7';              // ← paste your anon public key
+var OWNER_WHATSAPP = '+8801743553811';                       // ← your WhatsApp number for renewals
+
+var sb = null;
+var configOK = SUPABASE_URL.indexOf('YOUR-PROJECT-REF') === -1 && SUPABASE_ANON_KEY.indexOf('YOUR-ANON-PUBLIC-KEY') === -1;
+if (configOK && window.supabase) sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+/* ---------- In-memory state ---------- */
+var orders = [];
+var expenses = [];
+var myProfile = null;
+var currentUser = null;
+
+/* ---------- Helpers ---------- */
+function num(v){ var n = parseFloat(v); return isNaN(n) ? 0 : n; }
+function fmt(n){ return '৳' + (Number(n) || 0).toLocaleString('en-IN', { maximumFractionDigits: 2 }); }
+function esc(s){
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+    return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+  });
+}
+function todayStr(){
+  var d = new Date(), p = function(n){ return String(n).padStart(2,'0'); };
+  return d.getFullYear() + '-' + p(d.getMonth()+1) + '-' + p(d.getDate());
+}
+function orderTotal(o){ return num(o.sell_price) * num(o.quantity); }
+/* Profit rule: (sell − buy) × qty − delivery charge — Delivered orders only */
+function orderProfit(o){
+  if (o.status !== 'Delivered') return 0;
+  return (num(o.sell_price) - num(o.buy_price)) * num(o.quantity) - num(o.delivery_charge);
+}
+/* Returned/Cancelled: profit 0, loss = return_loss (delivery/return charges) */
+function orderLoss(o){
+  if (o.status === 'Returned' || o.status === 'Cancelled') return num(o.return_loss);
+  return 0;
+}
+function statusBadge(s){
+  var cls = { 'Pending':'b-pending', 'Shipped':'b-sent', 'Delivered':'b-delivered', 'Returned':'b-return', 'Cancelled':'b-cancel' }[s] || 'b-cancel';
+  return '<span class="badge ' + cls + '">' + esc(s) + '</span>';
+}
+function showLoading(on){ document.getElementById('loadingOverlay').style.display = on ? 'flex' : 'none'; }
+function showError(msg){ var t = document.getElementById('errorToast'); t.textContent = '⚠️ ' + msg + '  (tap to dismiss)'; t.style.display = 'block'; }
+function hideError(){ document.getElementById('errorToast').style.display = 'none'; }
+
+/* ---------- Subscription check ---------- */
+function daysLeft(endDateStr){
+  var t = new Date(); t.setHours(0,0,0,0);
+  var e = new Date(endDateStr + 'T00:00:00');
+  return Math.round((e - t) / 86400000);
+}
+function isSubscriptionBlocked(p){
+  if (!p) return false;                       // no profile row → don't lock out
+  if (p.subscription_status === 'expired') return true;
+  if (p.subscription_end && p.subscription_end < todayStr()) return true;
+  return false;
+}
+function renderSubBanner(p){
+  var el = document.getElementById('subBanner');
+  if (!p || !p.subscription_end) { el.style.display = 'none'; return; }
+  var left = daysLeft(p.subscription_end);
+  if (left > 7) { el.style.display = 'none'; return; }
+  var kind = p.subscription_status === 'trial' ? 'Trial' : 'Subscription';
+  var when = left < 0 ? 'has ended' : (left === 0 ? 'ends today' : 'ends in ' + left + ' day' + (left > 1 ? 's' : ''));
+  el.innerHTML = '⏳ Your ' + esc(kind.toLowerCase()) + ' ' + when + ' (on ' + esc(p.subscription_end) + '). Contact us to renew: <b>' + esc(OWNER_WHATSAPP) + '</b>';
+  el.style.display = 'block';
+}
+
+/* =====================================================
+   DATA ACCESS — small functions, easy to extend later
+   ===================================================== */
+async function fetchProfile(){
+  var res = await sb.from('profiles').select('*').eq('id', currentUser.id).maybeSingle();
+  if (res.error) throw new Error(res.error.message);
+  return res.data;
+}
+async function fetchOrders(){
+  var res = await sb.from('orders').select('*').order('order_date', { ascending: false }).order('created_at', { ascending: false });
+  if (res.error) throw new Error(res.error.message);
+  return res.data || [];
+}
+async function fetchExpenses(){
+  var res = await sb.from('expenses').select('*').order('expense_date', { ascending: false });
+  if (res.error) throw new Error(res.error.message);
+  return res.data || [];
+}
+async function reloadData(){
+  orders = await fetchOrders();
+  expenses = await fetchExpenses();
+}
+async function saveOrder(o){
+  var payload = {
+    order_date: o.order_date, customer_name: o.customer_name, phone: o.phone, address: o.address,
+    product: o.product, quantity: num(o.quantity) || 1,
+    sell_price: num(o.sell_price), buy_price: num(o.buy_price), delivery_charge: num(o.delivery_charge),
+    payment_type: o.payment_type, courier: o.courier, status: o.status,
+    return_reason: o.return_reason || null, return_loss: num(o.return_loss)
+  };
+  /* If a Returned/Cancelled order is saved without an explicit loss, default it to the delivery charge */
+  if ((o.status === 'Returned' || o.status === 'Cancelled') && !payload.return_loss) payload.return_loss = num(o.delivery_charge);
+  var res;
+  if (o.id) {
+    res = await sb.from('orders').update(payload).eq('id', o.id);
+  } else {
+    payload.user_id = currentUser.id;
+    payload.cod_received = false;
+    res = await sb.from('orders').insert(payload);
+  }
+  if (res.error) throw new Error(res.error.message);
+}
+async function deleteOrder(id){
+  var res = await sb.from('orders').delete().eq('id', id);
+  if (res.error) throw new Error(res.error.message);
+}
+async function updateOrderFields(id, patch){
+  var res = await sb.from('orders').update(patch).eq('id', id);
+  if (res.error) throw new Error(res.error.message);
+}
+async function saveExpense(e){
+  var payload = { expense_date: e.expense_date, category: e.category, amount: num(e.amount), note: e.note || null, user_id: currentUser.id };
+  var res = await sb.from('expenses').insert(payload);
+  if (res.error) throw new Error(res.error.message);
+}
+async function deleteExpense(id){
+  var res = await sb.from('expenses').delete().eq('id', id);
+  if (res.error) throw new Error(res.error.message);
+}
+
+/* ---------- Screens ---------- */
+function showScreen(name){
+  document.getElementById('authScreen').classList.toggle('show', name === 'auth');
+  document.getElementById('expiredScreen').classList.toggle('show', name === 'expired');
+  document.getElementById('app').style.display = name === 'app' ? 'block' : 'none';
+  document.getElementById('tabbar').classList.toggle('show', name === 'app');
+  document.getElementById('headerUser').style.display = name === 'app' ? 'flex' : 'none';
+}
+
+async function enterApp(){
+  showLoading(true); hideError();
+  try {
+    myProfile = await fetchProfile();
+    if (isSubscriptionBlocked(myProfile)) {
+      document.getElementById('expiredWhatsapp').href = 'https://wa.me/' + OWNER_WHATSAPP.replace(/\D/g, '');
+      document.getElementById('expiredWhatsapp').textContent = OWNER_WHATSAPP;
+      showScreen('expired');
+      return;
+    }
+    showScreen('app');
+    document.getElementById('userEmail').textContent = currentUser.email || '';
+    await reloadData();
+    populateYearSelect();
+    renderSubBanner(myProfile);
+    renderAll();
+  } catch (err) {
+    showError('Could not load your data: ' + err.message);
+  } finally {
+    showLoading(false);
+  }
+}
+
+/* ---------- Auth ---------- */
+async function doSignIn(){
+  var msg = document.getElementById('authMessage');
+  var email = document.getElementById('authEmail').value.trim();
+  var pass = document.getElementById('authPassword').value;
+  if (!email || !pass) { msg.textContent = 'Enter email and password.'; msg.className = 'msg-error'; return; }
+  showLoading(true); msg.textContent = '';
+  try {
+    var res = await sb.auth.signInWithPassword({ email: email, password: pass });
+    if (res.error) throw res.error;
+    currentUser = res.data.user;
+    await enterApp();
+  } catch (err) {
+    msg.textContent = err.message || 'Sign in failed.'; msg.className = 'msg-error';
+  } finally { showLoading(false); }
+}
+async function doSignUp(){
+  var msg = document.getElementById('authMessage');
+  var email = document.getElementById('authEmail').value.trim();
+  var pass = document.getElementById('authPassword').value;
+  if (!email || pass.length < 6) { msg.textContent = 'Enter a valid email and a password of at least 6 characters.'; msg.className = 'msg-error'; return; }
+  showLoading(true); msg.textContent = '';
+  try {
+    var res = await sb.auth.signUp({ email: email, password: pass });
+    if (res.error) throw res.error;
+    if (res.data.session) {
+      currentUser = res.data.user;
+      await enterApp();
+    } else {
+      msg.textContent = 'Account created! Check your email to confirm, then sign in.';
+      msg.className = 'msg-ok';
+    }
+  } catch (err) {
+    msg.textContent = err.message || 'Sign up failed.'; msg.className = 'msg-error';
+  } finally { showLoading(false); }
+}
+async function doLogout(){
+  try { await sb.auth.signOut(); } catch (e) { /* ignore */ }
+  currentUser = null; myProfile = null; orders = []; expenses = [];
+  showScreen('auth');
+}
+
+/* ---------- Tabs ---------- */
+function switchTab(name){
+  var pages = document.querySelectorAll('.page');
+  for (var i = 0; i < pages.length; i++) pages[i].classList.remove('active');
+  document.getElementById('page-' + name).classList.add('active');
+  var btns = document.querySelectorAll('#tabbar button');
+  for (var j = 0; j < btns.length; j++) btns[j].classList.toggle('active', btns[j].getAttribute('data-tab') === name);
+  window.scrollTo(0, 0);
+}
+
+/* =====================================================
+   RENDER FUNCTIONS
+   ===================================================== */
+function renderDashboard(){
+  var t = todayStr(), m = t.slice(0, 7);
+  var todaySales = 0, todayProfit = 0, monthProfit = 0, codPending = 0, returnCount = 0;
+  var monthLoss = 0, monthOrderProfit = 0;
+  orders.forEach(function(o){
+    if (o.status === 'Delivered') {
+      var sales = orderTotal(o), p = orderProfit(o);
+      if (o.order_date === t) { todaySales += sales; todayProfit += p; }
+      if ((o.order_date || '').slice(0, 7) === m) { monthProfit += p; monthOrderProfit += p; }
+    }
+    if (o.payment_type === 'COD' && o.status === 'Delivered' && !o.cod_received) codPending += orderTotal(o);
+    if (o.status === 'Returned') returnCount++;
+    if ((o.order_date || '').slice(0, 7) === m) monthLoss += orderLoss(o);
+  });
+  var todayExp = 0, monthExp = 0;
+  expenses.forEach(function(e){
+    if (e.expense_date === t) todayExp += num(e.amount);
+    if ((e.expense_date || '').slice(0, 7) === m) monthExp += num(e.amount);
+  });
+  var netToday = todayProfit - todayExp;
+  var netMonth = monthOrderProfit - monthExp - monthLoss;
+  document.getElementById('dTodaySales').textContent = fmt(todaySales);
+  document.getElementById('dTodayExpense').textContent = fmt(todayExp);
+  var tp = document.getElementById('dTodayProfit');
+  tp.textContent = (netToday < 0 ? '−' : '') + fmt(Math.abs(netToday)); tp.className = 'card-value ' + (netToday < 0 ? 'neg' : 'pos');
+  var mp = document.getElementById('dMonthProfit');
+  mp.textContent = (netMonth < 0 ? '−' : '') + fmt(Math.abs(netMonth)); mp.className = 'card-value ' + (netMonth < 0 ? 'neg' : 'pos');
+  document.getElementById('dCodPending').textContent = fmt(codPending);
+  document.getElementById('dReturnCount').textContent = returnCount;
+}
+
+/* ---------- Orders ---------- */
+var editingId = null;
+
+function resetOrderForm(){
+  document.getElementById('orderForm').reset();
+  document.getElementById('orderDate').value = todayStr();
+  document.getElementById('orderQty').value = 1;
+  document.getElementById('orderDelivery').value = 0;
+  document.getElementById('orderBuyPrice').value = 0;
+  editingId = null;
+  document.getElementById('orderSubmitBtn').textContent = 'Add Order';
+  document.getElementById('orderFormTitle').textContent = '➕ Add New Order';
+}
+
+document.getElementById('orderForm').addEventListener('submit', async function(e){
+  e.preventDefault();
+  var existing = null;
+  if (editingId) { for (var i = 0; i < orders.length; i++) if (orders[i].id === editingId) { existing = orders[i]; break; } }
+  var data = {
+    id: editingId || null,
+    order_date: document.getElementById('orderDate').value,
+    customer_name: document.getElementById('orderName').value.trim(),
+    phone: document.getElementById('orderPhone').value.trim(),
+    address: document.getElementById('orderAddress').value.trim(),
+    product: document.getElementById('orderProduct').value.trim(),
+    quantity: num(document.getElementById('orderQty').value) || 1,
+    sell_price: num(document.getElementById('orderSalePrice').value),
+    buy_price: num(document.getElementById('orderBuyPrice').value),
+    delivery_charge: num(document.getElementById('orderDelivery').value),
+    payment_type: document.getElementById('orderPayType').value,
+    courier: document.getElementById('orderCourier').value,
+    status: document.getElementById('orderStatus').value,
+    return_reason: existing ? existing.return_reason : '',
+    return_loss: existing ? num(existing.return_loss) : 0
+  };
+  showLoading(true); hideError();
+  try {
+    await saveOrder(data);
+    await reloadData();
+    resetOrderForm();
+    renderAll();
+  } catch (err) {
+    showError('Could not save order: ' + err.message);
+  } finally { showLoading(false); }
+});
+
+function editOrder(id){
+  var o = null;
+  for (var i = 0; i < orders.length; i++) if (orders[i].id === id) { o = orders[i]; break; }
+  if (!o) return;
+  document.getElementById('orderDate').value = o.order_date || todayStr();
+  document.getElementById('orderName').value = o.customer_name || '';
+  document.getElementById('orderPhone').value = o.phone || '';
+  document.getElementById('orderAddress').value = o.address || '';
+  document.getElementById('orderProduct').value = o.product || '';
+  document.getElementById('orderQty').value = o.quantity || 1;
+  document.getElementById('orderSalePrice').value = o.sell_price || 0;
+  document.getElementById('orderBuyPrice').value = o.buy_price || 0;
+  document.getElementById('orderDelivery').value = o.delivery_charge || 0;
+  document.getElementById('orderPayType').value = o.payment_type || 'COD';
+  document.getElementById('orderCourier').value = o.courier || 'Steadfast';
+  document.getElementById('orderStatus').value = o.status || 'Pending';
+  editingId = o.id;
+  document.getElementById('orderSubmitBtn').textContent = 'Update Order';
+  document.getElementById('orderFormTitle').textContent = '✏️ Edit Order';
+  switchTab('orders');
+  window.scrollTo(0, 0);
+}
+
+async function removeOrder(id){
+  if (!confirm('Delete this order?')) return;
+  showLoading(true); hideError();
+  try {
+    await deleteOrder(id);
+    await reloadData();
+    renderAll();
+  } catch (err) {
+    showError('Could not delete order: ' + err.message);
+  } finally { showLoading(false); }
+}
+
+function renderOrders(){
+  var q = (document.getElementById('orderSearch').value || '').trim().toLowerCase();
+  var rows = orders.filter(function(o){
+    if (!q) return true;
+    return (o.customer_name || '').toLowerCase().indexOf(q) !== -1 || (o.phone || '').indexOf(q) !== -1;
+  });
+  var html = rows.map(function(o){
+    return '<tr><td>' + esc(o.order_date) + '</td><td>' + esc(o.customer_name) + '</td><td>' + esc(o.phone) + '</td><td>' + esc(o.product) + '</td><td>' + esc(o.quantity) + '</td><td>' + fmt(orderTotal(o)) + '</td><td>' + esc(o.payment_type) + '</td><td>' + esc(o.courier) + '</td><td>' + statusBadge(o.status) + '</td>' +
+      '<td style="white-space:nowrap"><button class="btn btn-blue btn-small" onclick="editOrder(\'' + o.id + '\')">Edit</button> <button class="btn btn-red btn-small" onclick="removeOrder(\'' + o.id + '\')">Delete</button></td></tr>';
+  }).join('');
+  document.getElementById('orderTableBody').innerHTML = html || '<tr><td colspan="10" class="empty">No orders yet</td></tr>';
+}
+
+function renderCustomers(){
+  var map = {};
+  orders.forEach(function(o){
+    var ph = (o.phone || '').trim();
+    if (!ph) return;
+    if (!map[ph]) map[ph] = { phone: ph, name: o.customer_name || '', count: 0, total: 0 };
+    map[ph].count++;
+    if (o.customer_name) map[ph].name = o.customer_name;
+    map[ph].total += orderTotal(o);
+  });
+  var arr = Object.keys(map).map(function(k){ return map[k]; }).sort(function(a, b){ return b.count - a.count; });
+  var html = arr.map(function(c){
+    return '<tr><td>' + esc(c.phone) + '</td><td>' + esc(c.name) + '</td><td>' + c.count + '</td><td>' + fmt(c.total) + '</td></tr>';
+  }).join('');
+  document.getElementById('customerTableBody').innerHTML = html || '<tr><td colspan="4" class="empty">No customers yet</td></tr>';
+}
+
+/* ---------- Daily Sales & Expenses ---------- */
+document.getElementById('expenseForm').addEventListener('submit', async function(e){
+  e.preventDefault();
+  var data = {
+    expense_date: document.getElementById('expDate').value,
+    category: document.getElementById('expCategory').value,
+    amount: num(document.getElementById('expAmount').value),
+    note: document.getElementById('expNote').value.trim()
+  };
+  showLoading(true); hideError();
+  try {
+    await saveExpense(data);
+    await reloadData();
+    document.getElementById('expAmount').value = '';
+    document.getElementById('expNote').value = '';
+    renderAll();
+  } catch (err) {
+    showError('Could not save expense: ' + err.message);
+  } finally { showLoading(false); }
+});
+
+async function removeExpense(id){
+  if (!confirm('Delete this expense?')) return;
+  showLoading(true); hideError();
+  try {
+    await deleteExpense(id);
+    await reloadData();
+    renderAll();
+  } catch (err) {
+    showError('Could not delete expense: ' + err.message);
+  } finally { showLoading(false); }
+}
+
+function renderDaily(){
+  var d = document.getElementById('dailyDate').value || todayStr();
+  var dayOrders = orders.filter(function(o){ return o.order_date === d && o.status === 'Delivered'; });
+  var sales = 0, profit = 0;
+  dayOrders.forEach(function(o){ sales += orderTotal(o); profit += orderProfit(o); });
+  var dayExp = expenses.filter(function(e){ return e.expense_date === d; });
+  var expTotal = 0; dayExp.forEach(function(e){ expTotal += num(e.amount); });
+  var dayLoss = 0;
+  orders.forEach(function(o){ if (o.order_date === d) dayLoss += orderLoss(o); });
+  var net = profit - expTotal - dayLoss;
+  document.getElementById('dailySummary').innerHTML =
+    'Delivered sales: <b>' + fmt(sales) + '</b> &nbsp;|&nbsp; Order profit: <b>' + fmt(profit) + '</b><br>' +
+    'Expenses: <b>' + fmt(expTotal) + '</b> &nbsp;|&nbsp; Return loss: <b>' + fmt(dayLoss) + '</b><br>' +
+    'Net profit: <b class="' + (net < 0 ? 'neg' : 'pos') + '">' + (net < 0 ? '−' : '') + fmt(Math.abs(net)) + '</b>';
+  var shtml = dayOrders.map(function(o){
+    return '<tr><td>' + esc(o.product) + '</td><td>' + esc(o.quantity) + '</td><td>' + fmt(orderTotal(o)) + '</td><td>' + fmt(orderProfit(o)) + '</td></tr>';
+  }).join('');
+  document.getElementById('dailySalesBody').innerHTML = shtml || '<tr><td colspan="4" class="empty">No delivered orders on this date</td></tr>';
+  var ehtml = dayExp.map(function(e){
+    return '<tr><td>' + esc(e.category) + '</td><td>' + fmt(e.amount) + '</td><td>' + esc(e.note || '') + '</td><td><button class="btn btn-red btn-small" onclick="removeExpense(\'' + e.id + '\')">Delete</button></td></tr>';
+  }).join('');
+  document.getElementById('expenseTableBody').innerHTML = ehtml || '<tr><td colspan="4" class="empty">No expenses on this date</td></tr>';
+}
+
+/* ---------- COD & Courier ---------- */
+async function markReceived(id){
+  showLoading(true); hideError();
+  try {
+    await updateOrderFields(id, { cod_received: true });
+    await reloadData();
+    renderAll();
+  } catch (err) {
+    showError('Could not update COD status: ' + err.message);
+  } finally { showLoading(false); }
+}
+
+function renderCOD(){
+  var delivered = orders.filter(function(o){ return o.payment_type === 'COD' && o.status === 'Delivered'; });
+  var inTransit = orders.filter(function(o){ return o.payment_type === 'COD' && (o.status === 'Pending' || o.status === 'Shipped'); }).length;
+  var groups = {};
+  delivered.forEach(function(o){
+    var c = o.courier || 'Other';
+    if (!groups[c]) groups[c] = { count: 0, cod: 0, charge: 0, received: 0, pending: 0 };
+    var g = groups[c], amt = orderTotal(o);
+    g.count++; g.cod += amt; g.charge += num(o.delivery_charge);
+    if (o.cod_received) g.received += amt; else g.pending += amt;
+  });
+  var keys = Object.keys(groups).sort();
+  var html = '', tot = { count: 0, cod: 0, charge: 0, received: 0, pending: 0 };
+  keys.forEach(function(k){
+    var g = groups[k];
+    tot.count += g.count; tot.cod += g.cod; tot.charge += g.charge; tot.received += g.received; tot.pending += g.pending;
+    html += '<tr><td>' + esc(k) + '</td><td>' + g.count + '</td><td>' + fmt(g.cod) + '</td><td>' + fmt(g.charge) + '</td><td>' + fmt(g.received) + '</td><td class="neg">' + fmt(g.pending) + '</td></tr>';
+  });
+  if (keys.length) {
+    html += '<tr class="totals-row"><td>TOTAL</td><td>' + tot.count + '</td><td>' + fmt(tot.cod) + '</td><td>' + fmt(tot.charge) + '</td><td>' + fmt(tot.received) + '</td><td class="neg">' + fmt(tot.pending) + '</td></tr>';
+  } else {
+    html = '<tr><td colspan="6" class="empty">No delivered COD orders yet</td></tr>';
+  }
+  document.getElementById('courierTableBody').innerHTML = html;
+  document.getElementById('inTransitNote').textContent = 'In transit (Pending/Shipped): ' + inTransit + ' COD order(s) — they will appear here once Delivered.';
+  var pending = delivered.filter(function(o){ return !o.cod_received; });
+  var phtml = pending.map(function(o){
+    return '<div class="cod-item"><div class="info"><b>' + esc(o.customer_name) + '</b> (' + esc(o.phone) + ')<br>' + esc(o.product) + ' × ' + esc(o.quantity) + ' — ' + esc(o.courier) + '<br>Date: ' + esc(o.order_date) + '</div>' +
+      '<div class="amt">' + fmt(orderTotal(o)) + '</div>' +
+      '<button class="btn btn-small" onclick="markReceived(\'' + o.id + '\')">Mark as received</button></div>';
+  }).join('');
+  document.getElementById('codPendingList').innerHTML = phtml || '<p class="empty">No pending COD — everything collected ✅</p>';
+}
+
+/* ---------- Returns & Cancels ---------- */
+async function updateReturnField(id, field, value){
+  var patch = {};
+  if (field === 'return_loss') patch.return_loss = num(value); else patch[field] = value;
+  showLoading(true); hideError();
+  try {
+    await updateOrderFields(id, patch);
+    await reloadData();
+    renderReturns(); renderDashboard(); renderProducts(); renderYearly();
+  } catch (err) {
+    showError('Could not save: ' + err.message);
+  } finally { showLoading(false); }
+}
+
+function renderReturns(){
+  var list = orders.filter(function(o){ return o.status === 'Returned' || o.status === 'Cancelled'; });
+  var totalLoss = 0, rc = 0, cc = 0;
+  var html = list.map(function(o){
+    if (o.status === 'Returned') rc++; else cc++;
+    var loss = orderLoss(o); totalLoss += loss;
+    return '<tr><td>' + esc(o.order_date) + '</td><td>' + esc(o.customer_name) + '<br><small>' + esc(o.phone) + '</small></td><td>' + esc(o.product) + ' × ' + esc(o.quantity) + '</td><td>' + statusBadge(o.status) + '</td>' +
+      '<td><input class="ret-input" type="text" placeholder="Reason…" value="' + esc(o.return_reason || '') + '" onchange="updateReturnField(\'' + o.id + '\',\'return_reason\',this.value)"></td>' +
+      '<td><input class="ret-input" type="number" min="0" step="any" value="' + num(o.return_loss) + '" onchange="updateReturnField(\'' + o.id + '\',\'return_loss\',this.value)"></td></tr>';
+  }).join('');
+  document.getElementById('returnTableBody').innerHTML = html || '<tr><td colspan="6" class="empty">No returned or cancelled orders 🎉</td></tr>';
+  document.getElementById('returnSummary').innerHTML =
+    'Returns: <b>' + rc + '</b> &nbsp;|&nbsp; Cancels: <b>' + cc + '</b> &nbsp;|&nbsp; Total loss: <b class="neg">' + fmt(totalLoss) + '</b>';
+}
+
+/* ---------- Product Profit/Loss ---------- */
+function renderProducts(){
+  var map = {};
+  orders.forEach(function(o){
+    var key = (o.product || 'Unknown product').trim();
+    if (!map[key]) map[key] = { product: key, sales: 0, delivered: 0, returned: 0, profit: 0 };
+    var g = map[key];
+    if (o.status === 'Delivered') { g.sales += orderTotal(o); g.delivered++; g.profit += orderProfit(o); }
+    else if (o.status === 'Returned') { g.returned++; g.profit -= orderLoss(o); }
+    else if (o.status === 'Cancelled') { g.profit -= orderLoss(o); }
+  });
+  var arr = Object.keys(map).map(function(k){ return map[k]; }).sort(function(a, b){ return b.profit - a.profit; });
+  var html = arr.map(function(g){
+    var cls = g.profit < 0 ? 'neg' : 'pos';
+    return '<tr><td>' + esc(g.product) + '</td><td>' + fmt(g.sales) + '</td><td>' + g.delivered + '</td><td>' + g.returned + '</td><td class="' + cls + '">' + (g.profit < 0 ? '−' : '') + fmt(Math.abs(g.profit)) + '</td></tr>';
+  }).join('');
+  document.getElementById('productTableBody').innerHTML = html || '<tr><td colspan="5" class="empty">No product data yet</td></tr>';
+}
+
+/* ---------- Yearly Report ---------- */
+var MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function populateYearSelect(){
+  var sel = document.getElementById('yearSelect');
+  var prev = sel.value;
+  var cur = new Date().getFullYear();
+  var years = {}; years[cur] = true;
+  orders.forEach(function(o){ var y = +(o.order_date || '').slice(0, 4); if (y) years[y] = true; });
+  var arr = Object.keys(years).map(Number).sort(function(a, b){ return b - a; });
+  sel.innerHTML = arr.map(function(y){ return '<option value="' + y + '">' + y + '</option>'; }).join('');
+  sel.value = prev && years[prev] ? prev : String(cur);
+}
+
+function computeYearly(year){
+  var months = [];
+  for (var m = 0; m < 12; m++) {
+    var prefix = year + '-' + String(m + 1).padStart(2, '0');
+    var mo = orders.filter(function(o){ return (o.order_date || '').slice(0, 7) === prefix; });
+    var me = expenses.filter(function(e){ return (e.expense_date || '').slice(0, 7) === prefix; });
+    var row = { month: MONTHS[m], orders: mo.length, delivered: 0, retCanc: 0, sales: 0, cost: 0, delivery: 0, expenses: 0, retLoss: 0, net: 0 };
+    mo.forEach(function(o){
+      if (o.status === 'Delivered') {
+        row.delivered++;
+        row.sales += orderTotal(o);
+        row.cost += num(o.buy_price) * num(o.quantity);
+        row.delivery += num(o.delivery_charge);
+      } else if (o.status === 'Returned' || o.status === 'Cancelled') {
+        row.retCanc++;
+        row.retLoss += orderLoss(o);
+      }
+    });
+    me.forEach(function(e){ row.expenses += num(e.amount); });
+    row.net = row.sales - row.cost - row.delivery - row.expenses - row.retLoss;
+    months.push(row);
+  }
+  return months;
+}
+
+function renderYearly(){
+  var ysel = document.getElementById('yearSelect');
+  if (!ysel.value) return;
+  var year = +ysel.value;
+  var months = computeYearly(year);
+  var tot = { orders: 0, delivered: 0, retCanc: 0, sales: 0, cost: 0, delivery: 0, expenses: 0, net: 0 };
+  var html = months.map(function(r){
+    tot.orders += r.orders; tot.delivered += r.delivered; tot.retCanc += r.retCanc;
+    tot.sales += r.sales; tot.cost += r.cost; tot.delivery += r.delivery; tot.expenses += r.expenses; tot.net += r.net;
+    var neg = r.net < 0;
+    return '<tr><td>' + r.month + '</td><td>' + r.orders + '</td><td>' + r.delivered + '</td><td>' + r.retCanc + '</td><td>' + fmt(r.sales) + '</td><td>' + fmt(r.cost) + '</td><td>' + fmt(r.delivery) + '</td><td>' + fmt(r.expenses) + '</td><td class="' + (neg ? 'neg' : 'pos') + '">' + (neg ? '−' : '') + fmt(Math.abs(r.net)) + '</td></tr>';
+  }).join('');
+  html += '<tr class="totals-row"><td>TOTAL</td><td>' + tot.orders + '</td><td>' + tot.delivered + '</td><td>' + tot.retCanc + '</td><td>' + fmt(tot.sales) + '</td><td>' + fmt(tot.cost) + '</td><td>' + fmt(tot.delivery) + '</td><td>' + fmt(tot.expenses) + '</td><td class="' + (tot.net < 0 ? 'neg' : 'pos') + '">' + (tot.net < 0 ? '−' : '') + fmt(Math.abs(tot.net)) + '</td></tr>';
+  document.getElementById('yearlyTableBody').innerHTML = html;
+
+  /* Bar chart — plain CSS, scaled to the largest |net profit| month */
+  var maxAbs = 1;
+  months.forEach(function(r){ if (Math.abs(r.net) > maxAbs) maxAbs = Math.abs(r.net); });
+  document.getElementById('yearlyChart').innerHTML = months.map(function(r){
+    var w = Math.round(Math.abs(r.net) / maxAbs * 100);
+    var neg = r.net < 0;
+    return '<div class="bar-row"><span class="bar-label">' + r.month + '</span><div class="bar-track"><div class="bar-fill' + (neg ? ' neg' : '') + '" style="width:' + w + '%"></div></div><span class="bar-val">' + (neg ? '−' : '') + fmt(Math.abs(r.net)) + '</span></div>';
+  }).join('');
+
+  /* Top 5 products of the year, by profit */
+  var map = {};
+  orders.forEach(function(o){
+    if ((o.order_date || '').slice(0, 4) !== String(year)) return;
+    var key = (o.product || 'Unknown product').trim();
+    if (!map[key]) map[key] = { product: key, profit: 0, delivered: 0, sales: 0 };
+    var g = map[key];
+    if (o.status === 'Delivered') { g.profit += orderProfit(o); g.delivered++; g.sales += orderTotal(o); }
+    else if (o.status === 'Returned' || o.status === 'Cancelled') { g.profit -= orderLoss(o); }
+  });
+  var top = Object.keys(map).map(function(k){ return map[k]; }).sort(function(a, b){ return b.profit - a.profit; }).slice(0, 5);
+  document.getElementById('topProductsList').innerHTML = top.length
+    ? top.map(function(g, i){ return '<li><span>' + (i + 1) + '. ' + esc(g.product) + ' <small>(' + g.delivered + ' delivered)</small></span><b class="' + (g.profit < 0 ? 'neg' : 'pos') + '">' + (g.profit < 0 ? '−' : '') + fmt(Math.abs(g.profit)) + '</b></li>'; }).join('')
+    : '<li class="empty">No product data for this year</li>';
+}
+
+function exportYearCsv(){
+  var year = +document.getElementById('yearSelect').value;
+  var months = computeYearly(year);
+  var csvCell = function(v){ var s = String(v == null ? '' : v); if (/[",\n\r]/.test(s)) s = '"' + s.replace(/"/g, '""') + '"'; return s; };
+  var rows = [['Month','Orders','Delivered','Returns/Cancels','Sales','Product Cost','Delivery Charges','Expenses','Return Loss','Net Profit']];
+  var tot = { orders:0, delivered:0, retCanc:0, sales:0, cost:0, delivery:0, expenses:0, retLoss:0, net:0 };
+  months.forEach(function(r){
+    rows.push([r.month, r.orders, r.delivered, r.retCanc, r.sales, r.cost, r.delivery, r.expenses, r.retLoss, r.net]);
+    tot.orders += r.orders; tot.delivered += r.delivered; tot.retCanc += r.retCanc; tot.sales += r.sales; tot.cost += r.cost;
+    tot.delivery += r.delivery; tot.expenses += r.expenses; tot.retLoss += r.retLoss; tot.net += r.net;
+  });
+  rows.push(['TOTAL', tot.orders, tot.delivered, tot.retCanc, tot.sales, tot.cost, tot.delivery, tot.expenses, tot.retLoss, tot.net]);
+  var csv = '﻿' + rows.map(function(r){ return r.map(csvCell).join(','); }).join('\r\n');
+  var blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'yearly-report-' + year + '.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+/* ---------- Render everything ---------- */
+function renderAll(){
+  renderDashboard();
+  renderOrders();
+  renderCustomers();
+  renderDaily();
+  renderCOD();
+  renderReturns();
+  renderProducts();
+  renderYearly();
+}
+
+/* =====================================================
+   STARTUP
+   ===================================================== */
+document.getElementById('btnSignIn').addEventListener('click', doSignIn);
+document.getElementById('btnSignUp').addEventListener('click', doSignUp);
+document.getElementById('btnLogout').addEventListener('click', doLogout);
+document.getElementById('btnLogoutExpired').addEventListener('click', doLogout);
+document.getElementById('btnYearCsv').addEventListener('click', exportYearCsv);
+document.getElementById('btnPrint').addEventListener('click', function(){ window.print(); });
+document.getElementById('orderSearch').addEventListener('input', renderOrders);
+document.getElementById('dailyDate').addEventListener('change', function(){
+  document.getElementById('expDate').value = this.value;
+  renderDaily();
+});
+document.getElementById('yearSelect').addEventListener('change', renderYearly);
+
+(async function init(){
+  if (!configOK) {
+    document.getElementById('configWarning').hidden = false;
+    showScreen('auth');
+    return;
+  }
+  showLoading(true);
+  try {
+    var res = await sb.auth.getSession();
+    if (res.data && res.data.session) {
+      currentUser = res.data.session.user;
+      await enterApp();
+    } else {
+      showScreen('auth');
+    }
+  } catch (err) {
+    showError('Could not check your session: ' + err.message);
+    showScreen('auth');
+  } finally {
+    showLoading(false);
+  }
+})();
+document.getElementById('orderDate').value = todayStr();
+document.getElementById('dailyDate').value = todayStr();
+document.getElementById('expDate').value = todayStr();
+</script>
+</body>
+</html>
